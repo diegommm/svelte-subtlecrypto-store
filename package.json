@@ -1,0 +1,31 @@
+{
+  "name": "svelte-subtlecrypto-store",
+  "version": "1.0.0",
+  "description": "Svelte writable store using SubtleCrypto API",
+  "main": "index.js",
+  "scripts": {
+    "tsc": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diegommm/svelte-subtlecrypto-store.git"
+  },
+  "keywords": [
+    "svelte",
+    "svelte3",
+    "crypto",
+    "store",
+    "subtlecrypto"
+  ],
+  "author": "Diego Augusto Molina <npmjs@diegom.com.ar>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/diegommm/svelte-subtlecrypto-store/issues"
+  },
+  "homepage": "https://github.com/diegommm/svelte-subtlecrypto-store#readme",
+  "devDependencies": {
+    "svelte": "^4.2.1",
+    "typescript": "^5.2.2"
+  }
+}

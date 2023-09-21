@@ -1,0 +1,6 @@
+# *vi*
+*.swp
+*.swo
+
+# Dependency directories
+node_modules/
