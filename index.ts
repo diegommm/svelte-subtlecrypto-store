@@ -13,6 +13,8 @@ export type Options = {
     ivLength?: number;
 };
 
+type ProcessedOptions = Readonly<Required<Options>>;
+
 /**
  * Implements an encrypted Svelte writable store using the Crypto and
  * SubtleCrypto APIs with AES-GCM. The data is written to and read from a
@@ -26,6 +28,20 @@ export type Options = {
  *
  * The written format is IV + Salt + Ciphertext concatenated, and then Base64
  * encoded as a string. The data read is first processed with TextEncoder.
+ *
+ * The returned store also has the an extra property called `options`, which is
+ * an object containing the options used to create the store. This can be used
+ * to check how it was created and save them since they are necessary to decrypt
+ * the data. Also note that the supplied options are treated very strictly, and
+ * in case they are present but invalid values they are replaced by the
+ * defaults. For example, `iterations`, `saltLength` and `ivLength` are all
+ * expected to be of type number and be positive, finite integers. If you supply
+ * somthing like '16' or 16.1 for `saltLength`, then the default will be used.
+ * In the case you rely on loose inputs for these parameters, use the returned
+ * `options` member of the store to assert that they were interpreted as you
+ * expected them to. Your backing store will not be written to if it already has
+ * a string in it so you still have the chance to check your options. Otherwise
+ * use properly defined data in constants or sanitize your inputs.
  *
  * @param crypto - The Crypto implementation, which is typically found as
  * window.crypto in browser contexts.
@@ -53,10 +69,10 @@ export const subtleCryptoStore = Object.freeze(function(
     backend: Writable<string>,
     password: string,
     opts?: Options,
-): Writable<Promise<string>> {
+): Readonly<Writable<Promise<string>>> {
     if (typeof opts === 'undefined')
         opts = {};
-    const o: InternalOptions = Object.freeze({
+    const o: ProcessedOptions = Object.freeze({
         iterations: positiveIntOrDefault(opts, 'iterations', defaultIterations),
         saltLength: positiveIntOrDefault(opts, 'saltLength', defaultSaltLength),
         ivLength:   positiveIntOrDefault(opts, 'ivLength',   defaultIvLength),
@@ -92,6 +108,7 @@ export const subtleCryptoStore = Object.freeze(function(
             backend.set(newVal);
         }),
 
+        options: o,
     });
 });
 
@@ -99,7 +116,7 @@ export const subtleCryptoStore = Object.freeze(function(
 const newDecryptFunc = Object.freeze(function(
     crypto: Crypto,
     getMemoized: () => Promise<Memoized>,
-    o: InternalOptions,
+    o: ProcessedOptions,
 ): (s: string) => Promise<string> {
     return Object.freeze(async function(s: string): Promise<string> {
         if (typeof s !== 'string' || s === '')
@@ -133,7 +150,7 @@ const newDecryptFunc = Object.freeze(function(
 const encrypt = Object.freeze(async function(
     crypto: Crypto,
     getMemoized: () => Promise<Memoized>,
-    o: InternalOptions,
+    o: ProcessedOptions,
     plainText: Promise<string>,
 ): Promise<string> {
     if (typeof plainText === 'undefined')
@@ -241,8 +258,6 @@ const memoize = Object.freeze(function<T>(makeT: () => T): () => T {
     });
 });
 
-type InternalOptions = Readonly<Required<Options>>;
-
 /**
  * Attempts to get the given property of the object and returns it if it is a
  * positive, finite integer. Otherwise it returns the default value.
@@ -277,7 +292,7 @@ const toCodePoint = Object.freeze(function(s: string): number {
     if (typeof res !== 'number')
         // shouldn't happen in practice since this function is receiving the
         // output of atob
-        throw new Error('invalid codepoint', {cause: s});
+        throw new Error('invalid codepoint');
     return res;
 });
 

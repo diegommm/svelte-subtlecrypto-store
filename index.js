@@ -31,6 +31,20 @@ exports.defaultIvLength = 96;
  * The written format is IV + Salt + Ciphertext concatenated, and then Base64
  * encoded as a string. The data read is first processed with TextEncoder.
  *
+ * The returned store also has the an extra property called `options`, which is
+ * an object containing the options used to create the store. This can be used
+ * to check how it was created and save them since they are necessary to decrypt
+ * the data. Also note that the supplied options are treated very strictly, and
+ * in case they are present but invalid values they are replaced by the
+ * defaults. For example, `iterations`, `saltLength` and `ivLength` are all
+ * expected to be of type number and be positive, finite integers. If you supply
+ * somthing like '16' or 16.1 for `saltLength`, then the default will be used.
+ * In the case you rely on loose inputs for these parameters, use the returned
+ * `options` member of the store to assert that they were interpreted as you
+ * expected them to. Your backing store will not be written to if it already has
+ * a string in it so you still have the chance to check your options. Otherwise
+ * use properly defined data in constants or sanitize your inputs.
+ *
  * @param crypto - The Crypto implementation, which is typically found as
  * window.crypto in browser contexts.
  * @param backend - A writable Svelte store that implements set and subscribe.
@@ -79,6 +93,7 @@ exports.subtleCryptoStore = Object.freeze(function (crypto, backend, password, o
                 backend.set(newVal);
             });
         }),
+        options: o,
     });
 });
 /** Returns a fucntion that decrypts a ciphertext using AES-GCM */
@@ -195,7 +210,7 @@ const toCodePoint = Object.freeze(function (s) {
     if (typeof res !== 'number')
         // shouldn't happen in practice since this function is receiving the
         // output of atob
-        throw res;
+        throw new Error('invalid codepoint');
     return res;
 });
 /**
