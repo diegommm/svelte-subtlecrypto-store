@@ -1,6 +1,6 @@
 {
   "name": "svelte-subtlecrypto-store",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Svelte writable store using SubtleCrypto API",
   "main": "index.js",
   "scripts": {
