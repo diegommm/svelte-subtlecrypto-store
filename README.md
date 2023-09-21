@@ -22,7 +22,7 @@ introduction: a proof-of-concept, or just fun.
 ## Security details
 
 Encryption is done with AES-256-GCM and key derivation with PBKDF2 with SHA-384.
-The Salt and Initialization Vector are generated with Crypto.getRandomValues.
+The Salt and Initialization Vector are generated with `Crypto.getRandomValues`.
 There are only three configurable options:
 
 - The number of iterations for PBKDF2.
@@ -44,6 +44,12 @@ const store = subtleCryptoStore(window.crypto, backend, 'my super pass', {
 });
 ```
 
+*NOTE*: these options are very strictly expected to be finite, positive
+integer values of typr `number`. If you supply something like `'16'` or `16.1`
+that value will be dropped and a default used. Use predefined constants,
+sanitize your input or check the returned `options` member, which contains the
+parameters being used.
+
 ## Compatibility
 
 Source code is written in typescript targetting es2016. By then Crypto and
@@ -51,10 +57,10 @@ SubtleCrypto APIs were already available in most major browsers.
 
 Crypto and SubtleCrypto APIs are only available in a
 [Secure Context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts).
-For browsers, this means that the Window or Worker have an HTTPS origin, and if
-the window belongs to an iframe, then all its ancestors are also delivered
+For browsers, this means that the `Window` or `Worker` have an HTTPS origin, and
+if the window belongs to an iframe, then all its ancestors are also delivered
 through HTTPS. There are other cases as well, you can read the linked document
 for more information. At runtime, the global and raeadonly property
 [isSecureContext](https://developer.mozilla.org/en-US/docs/Web/API/isSecureContext)
 can be used to easily detect the availability of these features, so if it
-returns true then you should have access to these APIs.
+returns `true` then you should have access to these APIs.
