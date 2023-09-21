@@ -36,7 +36,7 @@ type ProcessedOptions = Readonly<Required<Options>>;
  * in case they are present but invalid values they are replaced by the
  * defaults. For example, `iterations`, `saltLength` and `ivLength` are all
  * expected to be of type number and be positive, finite integers. If you supply
- * somthing like '16' or 16.1 for `saltLength`, then the default will be used.
+ * something like '16' or 16.1 for `saltLength`, then the default will be used.
  * In the case you rely on loose inputs for these parameters, use the returned
  * `options` member of the store to assert that they were interpreted as you
  * expected them to. Your backing store will not be written to if it already has
@@ -112,7 +112,7 @@ export const subtleCryptoStore = Object.freeze(function(
     });
 });
 
-/** Returns a fucntion that decrypts a ciphertext using AES-GCM */
+/** Returns a function that decrypts a ciphertext using AES-GCM. */
 const newDecryptFunc = Object.freeze(function(
     crypto: Crypto,
     getMemoized: () => Promise<Memoized>,
@@ -146,7 +146,7 @@ const newDecryptFunc = Object.freeze(function(
     });
 });
 
-/** encrypts the givn plain text using AES-GCM */
+/** Encrypts the givn plain text using AES-GCM. */
 const encrypt = Object.freeze(async function(
     crypto: Crypto,
     getMemoized: () => Promise<Memoized>,
@@ -183,7 +183,7 @@ const encrypt = Object.freeze(async function(
         new Uint8Array(ciphertext)));
 });
 
-/** Returns a key derived with PBKDF2 from the given key material */
+/** Returns a key derived with PBKDF2 from the given key material. */
 const getKey = Object.freeze(async function(
     subtle: SubtleCrypto,
     keyMaterial: CryptoKey,
@@ -214,7 +214,7 @@ type Memoized = {
     keyMaterial: CryptoKey;
 };
 
-/** lazyly populates a `Memoized` only once */
+/** Lazily populates a `Memoized`, only once. */
 const newMemoized = Object.freeze(function(
     subtle: SubtleCrypto,
     password: string,
@@ -272,9 +272,7 @@ const positiveIntOrDefault = Object.freeze(function(
     return defaultValue;
 });
 
-/**
- * Returns whether the given argument is a positive, finite integer.
- */
+/** Returns whether the given argument is a positive, finite integer. */
 const positiveInt = Object.freeze(function(
     n: any,
 ): boolean {
@@ -284,9 +282,7 @@ const positiveInt = Object.freeze(function(
         n % 1 === 0;    // discard floating point values and Infinity
 });
 
-/**
- * Returns the Code Point at the first position of the given string.
- */
+/** Returns the Code Point at the first position of the given string. */
 const toCodePoint = Object.freeze(function(s: string): number {
     const res = s.codePointAt(0);
     if (typeof res !== 'number')
@@ -297,7 +293,7 @@ const toCodePoint = Object.freeze(function(s: string): number {
 });
 
 /**
- * Decodes a Base64 encoded string into a binary represenation. If the string
+ * Decodes a Base64 encoded string into a binary representation. If the string
  * contains an invalid Code Point anywhere it throws.
  */
 const base64DecodeToBytes = Object.freeze(function(s: string): Uint8Array {

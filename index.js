@@ -38,7 +38,7 @@ exports.defaultIvLength = 96;
  * in case they are present but invalid values they are replaced by the
  * defaults. For example, `iterations`, `saltLength` and `ivLength` are all
  * expected to be of type number and be positive, finite integers. If you supply
- * somthing like '16' or 16.1 for `saltLength`, then the default will be used.
+ * something like '16' or 16.1 for `saltLength`, then the default will be used.
  * In the case you rely on loose inputs for these parameters, use the returned
  * `options` member of the store to assert that they were interpreted as you
  * expected them to. Your backing store will not be written to if it already has
@@ -96,7 +96,7 @@ exports.subtleCryptoStore = Object.freeze(function (crypto, backend, password, o
         options: o,
     });
 });
-/** Returns a fucntion that decrypts a ciphertext using AES-GCM */
+/** Returns a function that decrypts a ciphertext using AES-GCM. */
 const newDecryptFunc = Object.freeze(function (crypto, getMemoized, o) {
     return Object.freeze(function (s) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -118,7 +118,7 @@ const newDecryptFunc = Object.freeze(function (crypto, getMemoized, o) {
         });
     });
 });
-/** encrypts the givn plain text using AES-GCM */
+/** Encrypts the givn plain text using AES-GCM. */
 const encrypt = Object.freeze(function (crypto, getMemoized, o, plainText) {
     return __awaiter(this, void 0, void 0, function* () {
         if (typeof plainText === 'undefined')
@@ -139,7 +139,7 @@ const encrypt = Object.freeze(function (crypto, getMemoized, o, plainText) {
         return Promise.resolve(base64EncodeFromBytes(iv, salt, new Uint8Array(ciphertext)));
     });
 });
-/** Returns a key derived with PBKDF2 from the given key material */
+/** Returns a key derived with PBKDF2 from the given key material. */
 const getKey = Object.freeze(function (subtle, keyMaterial, salt, iterations) {
     return __awaiter(this, void 0, void 0, function* () {
         return subtle.deriveKey({
@@ -153,7 +153,7 @@ const getKey = Object.freeze(function (subtle, keyMaterial, salt, iterations) {
         }, false, ['encrypt', 'decrypt']);
     });
 });
-/** lazyly populates a `Memoized` only once */
+/** Lazily populates a `Memoized`, only once. */
 const newMemoized = Object.freeze(function (subtle, password) {
     return memoize(Object.freeze(function () {
         return __awaiter(this, void 0, void 0, function* () {
@@ -193,18 +193,14 @@ const positiveIntOrDefault = Object.freeze(function (obj, prop, defaultValue) {
         return obj.prop;
     return defaultValue;
 });
-/**
- * Returns whether the given argument is a positive, finite integer.
- */
+/** Returns whether the given argument is a positive, finite integer. */
 const positiveInt = Object.freeze(function (n) {
     return typeof n === 'number' &&
         n === n && // discard NaN
         n > 0 && // discard non-positive
         n % 1 === 0; // discard floating point values and Infinity
 });
-/**
- * Returns the Code Point at the first position of the given string.
- */
+/** Returns the Code Point at the first position of the given string. */
 const toCodePoint = Object.freeze(function (s) {
     const res = s.codePointAt(0);
     if (typeof res !== 'number')
@@ -214,7 +210,7 @@ const toCodePoint = Object.freeze(function (s) {
     return res;
 });
 /**
- * Decodes a Base64 encoded string into a binary represenation. If the string
+ * Decodes a Base64 encoded string into a binary representation. If the string
  * contains an invalid Code Point anywhere it throws.
  */
 const base64DecodeToBytes = Object.freeze(function (s) {
