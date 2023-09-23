@@ -323,6 +323,6 @@ const base64EncodeFromBytes = Object.freeze(function(
 ): string {
     let binString = '';
     for (let i=0; i < s.length; i++)
-        binString += String.fromCodePoint(...s[i]);
+        binString += String.fromCodePoint.apply(undefined, s[i]);
     return btoa(binString);
 });
