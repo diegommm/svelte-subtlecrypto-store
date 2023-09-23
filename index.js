@@ -80,17 +80,29 @@ exports.subtleCryptoStore = Object.freeze(function (crypto, backend, password, o
         subscribe: Object.freeze((0, store_1.derived)(backend, decrypt, Promise.resolve('')).subscribe),
         set: Object.freeze(function (value) {
             return __awaiter(this, void 0, void 0, function* () {
-                let newVal;
-                newVal = yield encrypt(crypto, getMemoized, o, value);
-                backend.set(newVal);
+                try {
+                    let newVal;
+                    newVal = yield encrypt(crypto, getMemoized, o, value);
+                    backend.set(newVal);
+                    return Promise.resolve(undefined);
+                }
+                catch (e) {
+                    return Promise.reject(e);
+                }
             });
         }),
         update: Object.freeze(function (updater) {
             return __awaiter(this, void 0, void 0, function* () {
-                let newVal;
-                const cur = decrypt((0, store_1.get)(backend));
-                newVal = yield encrypt(crypto, getMemoized, o, updater(cur));
-                backend.set(newVal);
+                try {
+                    let newVal;
+                    const cur = decrypt((0, store_1.get)(backend));
+                    newVal = yield encrypt(crypto, getMemoized, o, updater(cur));
+                    backend.set(newVal);
+                    return Promise.resolve(undefined);
+                }
+                catch (e) {
+                    return Promise.reject(e);
+                }
             });
         }),
         options: o,
@@ -100,21 +112,26 @@ exports.subtleCryptoStore = Object.freeze(function (crypto, backend, password, o
 const newDecryptFunc = Object.freeze(function (crypto, getMemoized, o) {
     return Object.freeze(function (s) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (typeof s !== 'string' || s === '')
-                return Promise.resolve('');
-            const m = yield getMemoized();
-            const b64decoded = base64DecodeToBytes(s);
-            if (b64decoded.byteLength < o.ivLength + o.saltLength + 1)
-                throw new Error('insufficient data');
-            const iv = b64decoded.slice(0, o.ivLength);
-            const salt = b64decoded.slice(o.ivLength, o.ivLength + o.saltLength);
-            const ciphertext = b64decoded.slice(o.ivLength + o.saltLength);
-            const key = yield getKey(crypto.subtle, m.keyMaterial, salt, o.iterations);
-            const plainBytes = yield crypto.subtle.decrypt({
-                name: 'AES-GCM',
-                iv: iv,
-            }, key, ciphertext);
-            return Promise.resolve(m.textDecoder.decode(plainBytes));
+            try {
+                if (typeof s !== 'string' || s === '')
+                    return Promise.resolve('');
+                const m = yield getMemoized();
+                const b64decoded = base64DecodeToBytes(s);
+                if (b64decoded.byteLength < o.ivLength + o.saltLength + 1)
+                    throw new Error('insufficient data');
+                const iv = b64decoded.slice(0, o.ivLength);
+                const salt = b64decoded.slice(o.ivLength, o.ivLength + o.saltLength);
+                const ciphertext = b64decoded.slice(o.ivLength + o.saltLength);
+                const key = yield getKey(crypto.subtle, m.keyMaterial, salt, o.iterations);
+                const plainBytes = yield crypto.subtle.decrypt({
+                    name: 'AES-GCM',
+                    iv: iv,
+                }, key, ciphertext);
+                return Promise.resolve(m.textDecoder.decode(plainBytes));
+            }
+            catch (e) {
+                return Promise.reject(e);
+            }
         });
     });
 });

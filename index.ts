@@ -93,19 +93,29 @@ export const subtleCryptoStore = Object.freeze(function(
             this: void,
             value: Promise<string>,
         ): Promise<undefined> {
-            let newVal: string;
-            newVal = await encrypt(crypto, getMemoized, o, value);
-            backend.set(newVal);
+            try {
+                let newVal: string;
+                newVal = await encrypt(crypto, getMemoized, o, value);
+                backend.set(newVal);
+                return Promise.resolve(undefined);
+            } catch(e) {
+                return Promise.reject(e);
+            }
         }),
 
         update: Object.freeze(async function(
             this: void,
             updater: Updater<Promise<string>>,
         ): Promise<undefined> {
-            let newVal: string;
-            const cur = decrypt(get(backend));
-            newVal = await encrypt(crypto, getMemoized, o, updater(cur));
-            backend.set(newVal);
+            try {
+                let newVal: string;
+                const cur = decrypt(get(backend));
+                newVal = await encrypt(crypto, getMemoized, o, updater(cur));
+                backend.set(newVal);
+                return Promise.resolve(undefined);
+            } catch(e) {
+                return Promise.reject(e);
+            }
         }),
 
         options: o,
@@ -119,30 +129,35 @@ const newDecryptFunc = Object.freeze(function(
     o: ProcessedOptions,
 ): (s: string) => Promise<string> {
     return Object.freeze(async function(s: string): Promise<string> {
-        if (typeof s !== 'string' || s === '')
-            return Promise.resolve('');
+        try {
+            if (typeof s !== 'string' || s === '')
+                return Promise.resolve('');
 
-        const m = await getMemoized();
-        const b64decoded = base64DecodeToBytes(s);
-        if (b64decoded.byteLength < o.ivLength + o.saltLength + 1)
-            throw new Error('insufficient data');
+            const m = await getMemoized();
+            const b64decoded = base64DecodeToBytes(s);
+            if (b64decoded.byteLength < o.ivLength + o.saltLength + 1)
+                throw new Error('insufficient data');
 
-        const iv = b64decoded.slice(0, o.ivLength);
-        const salt = b64decoded.slice(o.ivLength, o.ivLength+o.saltLength);
-        const ciphertext = b64decoded.slice(o.ivLength+o.saltLength);
-        const key = await getKey(crypto.subtle, m.keyMaterial, salt,
-            o.iterations);
+            const iv = b64decoded.slice(0, o.ivLength);
+            const salt = b64decoded.slice(o.ivLength, o.ivLength+o.saltLength);
+            const ciphertext = b64decoded.slice(o.ivLength+o.saltLength);
+            const key = await getKey(crypto.subtle, m.keyMaterial, salt,
+                o.iterations);
 
-        const plainBytes = await crypto.subtle.decrypt(
-            {
-                name: 'AES-GCM',
-                iv: iv,
-            },
-            key,
-            ciphertext,
-        );
+            const plainBytes = await crypto.subtle.decrypt(
+                {
+                    name: 'AES-GCM',
+                    iv: iv,
+                },
+                key,
+                ciphertext,
+            );
 
-        return Promise.resolve(m.textDecoder.decode(plainBytes));
+            return Promise.resolve(m.textDecoder.decode(plainBytes));
+
+        } catch(e) {
+            return Promise.reject(e);
+        }
     });
 });
 
