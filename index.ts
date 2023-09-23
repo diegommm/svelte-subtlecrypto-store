@@ -288,9 +288,7 @@ const positiveIntOrDefault = Object.freeze(function(
 });
 
 /** Returns whether the given argument is a positive, finite integer. */
-const positiveInt = Object.freeze(function(
-    n: any,
-): boolean {
+const positiveInt = Object.freeze(function(n: any): boolean {
     return typeof n === 'number' &&
         n === n &&      // discard NaN
         n > 0 &&        // discard non-positive
@@ -321,10 +319,10 @@ const base64DecodeToBytes = Object.freeze(function(s: string): Uint8Array {
  * iterable or array-like of number element type.
  */
 const base64EncodeFromBytes = Object.freeze(function(
-    ...s: Array<ArrayLike<number> | Iterable<number>>
+    ...s: Array<Uint8Array>
 ): string {
     let binString = '';
     for (let i=0; i < s.length; i++)
-        binString += Array.from(s[i], String.fromCodePoint).join('');
+        binString += String.fromCodePoint(...s[i]);
     return btoa(binString);
 });

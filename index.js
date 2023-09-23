@@ -241,6 +241,6 @@ const base64DecodeToBytes = Object.freeze(function (s) {
 const base64EncodeFromBytes = Object.freeze(function (...s) {
     let binString = '';
     for (let i = 0; i < s.length; i++)
-        binString += Array.from(s[i], String.fromCodePoint).join('');
+        binString += String.fromCodePoint(...s[i]);
     return btoa(binString);
 });
