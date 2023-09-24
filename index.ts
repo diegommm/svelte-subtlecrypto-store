@@ -323,6 +323,12 @@ const base64EncodeFromBytes = Object.freeze(function(
 ): string {
     let binString = '';
     for (let i=0; i < s.length; i++)
-        binString += String.fromCodePoint.apply(undefined, s[i]);
+        binString += String.fromCodePoint.apply(undefined,
+            // [typescript] Uint8Array values are not writable, so they don't
+            // have push, pop, etc. But we know here we just need it for
+            // readonly access, so we force-override the type to be able to call
+            // `apply`.
+            // See: https://github.com/microsoft/TypeScript/issues/55846
+            s[i] as unknown as number[]);
     return btoa(binString);
 });
