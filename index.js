@@ -45,13 +45,13 @@ exports.defaultIvLength = 96;
  * a string in it so you still have the chance to check your options. Otherwise
  * use properly defined data in constants or sanitize your inputs.
  *
- * @param crypto - The Crypto implementation, which is typically found as
- * window.crypto in browser contexts.
  * @param backend - A writable Svelte store that implements set and subscribe.
  * Data will be written to and read from this store, and is expected to hold
  * a string.
  * @param password - The encryption password.
  * @param opts - An optional object containing additional arguments.
+ * @param crypto - The Crypto implementation, which is typically found as
+ * window.crypto in browser contexts.
  *
  * @example
  * ```
@@ -66,7 +66,7 @@ exports.defaultIvLength = 96;
  * console.log($backend); // prints the Base64 encoded IV+Salt+Ciphertext
  * ```
  */
-exports.subtleCryptoStore = Object.freeze(function (crypto, backend, password, opts) {
+exports.subtleCryptoStore = Object.freeze(function (backend, password, opts, cr = window.crypto) {
     if (typeof opts === 'undefined')
         opts = {};
     const o = Object.freeze({
@@ -74,15 +74,15 @@ exports.subtleCryptoStore = Object.freeze(function (crypto, backend, password, o
         saltLength: positiveIntOrDefault(opts, 'saltLength', exports.defaultSaltLength),
         ivLength: positiveIntOrDefault(opts, 'ivLength', exports.defaultIvLength),
     });
-    const getMemoized = newMemoized(crypto.subtle, password);
-    const decrypt = newDecryptFunc(crypto, getMemoized, o);
+    const getMemoized = newMemoized(cr.subtle, password);
+    const decrypt = newDecryptFunc(cr, getMemoized, o);
     return Object.freeze({
         subscribe: Object.freeze((0, store_1.derived)(backend, decrypt, Promise.resolve('')).subscribe),
         set: Object.freeze(function (value) {
             return __awaiter(this, void 0, void 0, function* () {
                 try {
                     let newVal;
-                    newVal = yield encrypt(crypto, getMemoized, o, value);
+                    newVal = yield encrypt(cr, getMemoized, o, value);
                     backend.set(newVal);
                     return Promise.resolve(undefined);
                 }
@@ -96,7 +96,7 @@ exports.subtleCryptoStore = Object.freeze(function (crypto, backend, password, o
                 try {
                     let newVal;
                     const cur = decrypt((0, store_1.get)(backend));
-                    newVal = yield encrypt(crypto, getMemoized, o, updater(cur));
+                    newVal = yield encrypt(cr, getMemoized, o, updater(cur));
                     backend.set(newVal);
                     return Promise.resolve(undefined);
                 }

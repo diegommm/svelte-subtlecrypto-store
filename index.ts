@@ -43,13 +43,13 @@ type ProcessedOptions = Readonly<Required<Options>>;
  * a string in it so you still have the chance to check your options. Otherwise
  * use properly defined data in constants or sanitize your inputs.
  *
- * @param crypto - The Crypto implementation, which is typically found as
- * window.crypto in browser contexts.
  * @param backend - A writable Svelte store that implements set and subscribe.
  * Data will be written to and read from this store, and is expected to hold
  * a string.
  * @param password - The encryption password.
  * @param opts - An optional object containing additional arguments.
+ * @param crypto - The Crypto implementation, which is typically found as
+ * window.crypto in browser contexts.
  *
  * @example
  * ```
@@ -65,10 +65,10 @@ type ProcessedOptions = Readonly<Required<Options>>;
  * ```
  */
 export const subtleCryptoStore = Object.freeze(function(
-    crypto: Crypto,
     backend: Writable<string>,
     password: string,
     opts?: Options,
+    cr: Crypto = window.crypto,
 ): Readonly<Writable<Promise<string>>> {
     if (typeof opts === 'undefined')
         opts = {};
@@ -78,9 +78,9 @@ export const subtleCryptoStore = Object.freeze(function(
         ivLength:   positiveIntOrDefault(opts, 'ivLength',   defaultIvLength),
     });
 
-    const getMemoized = newMemoized(crypto.subtle, password);
+    const getMemoized = newMemoized(cr.subtle, password);
 
-    const decrypt = newDecryptFunc(crypto, getMemoized, o);
+    const decrypt = newDecryptFunc(cr, getMemoized, o);
 
     return Object.freeze({
         subscribe: Object.freeze(
@@ -95,7 +95,7 @@ export const subtleCryptoStore = Object.freeze(function(
         ): Promise<undefined> {
             try {
                 let newVal: string;
-                newVal = await encrypt(crypto, getMemoized, o, value);
+                newVal = await encrypt(cr, getMemoized, o, value);
                 backend.set(newVal);
                 return Promise.resolve(undefined);
             } catch(e) {
@@ -110,7 +110,7 @@ export const subtleCryptoStore = Object.freeze(function(
             try {
                 let newVal: string;
                 const cur = decrypt(get(backend));
-                newVal = await encrypt(crypto, getMemoized, o, updater(cur));
+                newVal = await encrypt(cr, getMemoized, o, updater(cur));
                 backend.set(newVal);
                 return Promise.resolve(undefined);
             } catch(e) {
